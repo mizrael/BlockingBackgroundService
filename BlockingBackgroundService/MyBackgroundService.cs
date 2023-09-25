@@ -1,20 +1,29 @@
 ﻿internal class MyBackgroundService : BackgroundService
 {
     private long _counter = 0;
+    private readonly bool _isBlocking;
+
+    public MyBackgroundService(bool isBlocking)
+    {
+        _isBlocking = isBlocking;
+    }
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        while (!cancellationToken.IsCancellationRequested)
+        if (_isBlocking)
         {
-            await DoSomethingAsync();
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                await DoSomethingAsync();
+            }
         }
-
-        // uncomment this to 
-
-        //await Task.Factory.StartNew(async () =>
-        //{
-        //    await this.ExecuteAsyncCore(cancellationToken).ConfigureAwait(false);
-        //}, cancellationToken);
+        else
+        {
+            await Task.Factory.StartNew(async () =>
+            {
+                await this.ExecuteAsyncCore(cancellationToken).ConfigureAwait(false);
+            }, cancellationToken);
+        }
     }
 
     private async Task ExecuteAsyncCore(CancellationToken cancellationToken)
